@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agent Monitor</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --paper: #ffffff;
+    --paper-2: #faf8f2;
+    --ink: #202124;
+    --muted: #74706a;
+    --line: #e3ddd2;
+    --line-strong: #bdb5a8;
+    --navy: #0f2a43;
+    --navy-2: #193a59;
+    --yellow: #e7c75c;
+    --yellow-2: #f6e6aa;
+    --green: #4f9c68;
+    --green-soft: #dceadb;
+    --red: #e54747;
+    --red-soft: #f6d8d0;
+    --blue: #4d79a9;
+    --blue-soft: #dfe9f3;
+    --shadow: 0 14px 34px rgba(38, 31, 22, .09);
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "YuGothic", sans-serif;
+  }
+
+  button, input { font: inherit; }
+  .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  .top-ribbon {
+    background: var(--navy);
+    color: #fff;
+    border-bottom: 4px solid var(--yellow);
+  }
+  .top-inner {
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 10px 18px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: var(--yellow);
+    color: var(--navy);
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .brand-name {
+    font-size: 15px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .mode-row {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+  }
+  .mode-chip {
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid rgba(255,255,255,.14);
+    padding: 0 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: rgba(255,255,255,.84);
+    background: rgba(255,255,255,.08);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .mode-chip.live {
+    background: #fff;
+    color: var(--navy);
+    border-color: transparent;
+  }
+  .live-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 0 0 rgba(229,71,71,.55);
+    animation: livePulse 1.3s ease-out infinite;
+  }
+  @keyframes livePulse {
+    0% { box-shadow: 0 0 0 0 rgba(229,71,71,.55); }
+    100% { box-shadow: 0 0 0 9px rgba(229,71,71,0); }
+  }
+  .ticker {
+    min-width: 120px;
+    height: 30px;
+    border-radius: 7px;
+    border: 1px solid rgba(255,255,255,.16);
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: #fff;
+    color: var(--ink);
+    font-size: 12px;
+  }
+  .ticker span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .updated {
+    font-size: 11px;
+    color: rgba(255,255,255,.72);
+    white-space: nowrap;
+  }
+
+  .main {
+    max-width: 1320px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 16px 18px 42px;
+  }
+  .filters {
+    display: grid;
+    grid-template-columns: minmax(190px, 1fr) auto;
+    gap: 12px;
+    margin: 0 0 14px;
+    align-items: center;
+  }
+  .search {
+    width: 100%;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--ink);
+    padding: 0 13px;
+    outline: none;
+    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
+  }
+  .search:focus { border-color: var(--navy-2); }
+  .filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .filter-btn {
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: rgba(255,255,255,.52);
+    color: var(--muted);
+    padding: 0 11px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .filter-btn.active {
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(92px, 1fr));
+    gap: 10px;
+    margin: 0 0 18px;
+  }
+  .metric {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    min-height: 72px;
+    padding: 10px 12px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.75) inset;
+  }
+  .metric-label {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .metric-value {
+    margin-top: 6px;
+    font-size: 24px;
+    line-height: 1;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric.running .metric-value { color: var(--red); }
+  .metric.ok .metric-value { color: var(--green); }
+  .metric.error .metric-value { color: var(--red); }
+  .metric.source .metric-value { color: var(--blue); }
+
+  .section-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 20px 0 10px;
+  }
+  .section-head h1,
+  .section-head h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.25;
+  }
+  .section-note {
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .board-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
+    gap: 14px;
+  }
+
+  .agent-card {
+    position: relative;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+    box-shadow: 0 1px 0 rgba(255,255,255,.86) inset;
+    overflow: hidden;
+  }
+  .agent-card.featured {
+    min-height: 206px;
+    box-shadow: var(--shadow);
+  }
+  .agent-card.running {
+    border-color: #bdb09b;
+  }
+  .agent-card.running::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--red);
+    animation: sideBlink 1.08s infinite;
+  }
+  @keyframes sideBlink {
+    0%, 100% { opacity: .28; }
+    50% { opacity: 1; }
+  }
+  .agent-card.error {
+    border-color: #e5a299;
+    background: #fff8f5;
+  }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+  }
+  .avatar-wrap {
+    position: relative;
+    flex: 0 0 auto;
+    width: 72px;
+    height: 72px;
+    display: block;
+    overflow: visible;
+  }
+  .agent-card.featured .avatar-wrap {
+    width: 84px;
+    height: 84px;
+  }
+  .avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    border: 2px solid #b7aea2;
+    border-radius: 50%;
+    background: #fff;
+    display: block;
+  }
+  .status-bubble {
+    position: absolute;
+    right: -2px;
+    bottom: 7px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    background: var(--line-strong);
+  }
+  .status-bubble.running {
+    background: var(--red);
+    animation: livePulse 1.3s ease-out infinite;
+  }
+  .status-bubble.idle { background: var(--green); }
+  .status-bubble.error { background: var(--red); }
+  .agent-meta {
+    min-width: 0;
+    flex: 1;
+    padding-top: 2px;
+  }
+  .name-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+  }
+  .agent-name {
+    font-size: 14px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .agent-card.featured .agent-name { font-size: 16px; }
+  .source-tag {
+    flex: 0 0 auto;
+    height: 20px;
+    padding: 0 7px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 900;
+  }
+  .source-tag.codex {
+    color: #173e32;
+    background: var(--green-soft);
+  }
+  .source-tag.claude-code {
+    color: #173c61;
+    background: var(--blue-soft);
+  }
+  .role-line {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .status-line {
+    margin-top: 7px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 800;
+  }
+  .typing-dots {
+    display: inline-flex;
+    gap: 3px;
+  }
+  .typing-dots span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: dotBlink 1.1s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: .17s; }
+  .typing-dots span:nth-child(3) { animation-delay: .34s; }
+  @keyframes dotBlink {
+    0%, 80%, 100% { opacity: .25; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-2px); }
+  }
+
+  .task-box {
+    margin-top: 13px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--paper-2);
+    padding: 10px 11px;
+    min-height: 58px;
+  }
+  .task-title {
+    font-size: 13px;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .agent-card.featured .task-title {
+    font-size: 14px;
+  }
+  .task-sub {
+    margin-top: 7px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .guess {
+    color: #5c4a16;
+    background: var(--yellow-2);
+    border: 1px solid #e5d178;
+    border-radius: 999px;
+    padding: 2px 7px;
+  }
+
+  .layers {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .layer {
+    position: relative;
+    min-height: 32px;
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 8px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 11px;
+    border-top: 1px dashed rgba(185,175,158,.75);
+    padding-top: 7px;
+  }
+  .layer::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 32px;
+    width: 58px;
+    height: 1px;
+    background: var(--red);
+    opacity: 0;
+  }
+  .agent-card.running .layer::before {
+    animation: dataFlow 1.35s linear infinite;
+  }
+  @keyframes dataFlow {
+    0% { transform: translateX(-18px); opacity: 0; }
+    22% { opacity: .8; }
+    100% { transform: translateX(120px); opacity: 0; }
+  }
+  .layer-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: #fff;
+    display: grid;
+    place-items: center;
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: 900;
+  }
+  .layer-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .layer-name {
+    color: var(--ink);
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .layer-detail {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .empty-state {
+    border: 1px dashed var(--line-strong);
+    border-radius: 8px;
+    background: rgba(255,253,248,.58);
+    min-height: 120px;
+    display: grid;
+    place-items: center;
+    padding: 22px;
+    color: var(--muted);
+    text-align: center;
+    font-size: 13px;
+  }
+
+  .bottom-area {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+    gap: 14px;
+    margin-top: 22px;
+  }
+  .panel {
+    background: rgba(255,253,248,.78);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px;
+  }
+  .panel h2 {
+    margin: 0 0 10px;
+    font-size: 15px;
+  }
+  .activity-list,
+  .type-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .activity-item,
+  .type-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 9px;
+    align-items: center;
+    min-height: 32px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--line-strong);
+  }
+  .activity-dot.running { background: var(--red); }
+  .activity-dot.idle { background: var(--green); }
+  .activity-dot.error { background: var(--red); }
+  .activity-label,
+  .type-name {
+    min-width: 0;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .activity-time,
+  .type-count {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .type-bar {
+    grid-column: 1 / -1;
+    height: 6px;
+    border-radius: 999px;
+    background: #e6dece;
+    overflow: hidden;
+  }
+  .type-bar span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--blue);
+  }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 980px) {
+    .top-inner {
+      grid-template-columns: 1fr;
+      gap: 9px;
+    }
+    .mode-row { flex-wrap: wrap; }
+    .featured-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .summary { grid-template-columns: repeat(3, minmax(90px, 1fr)); }
+    .bottom-area { grid-template-columns: 1fr; }
+    .updated { justify-self: start; }
+  }
+
+  @media (max-width: 640px) {
+    .main { padding: 12px 12px 30px; }
+    .filters { grid-template-columns: 1fr; }
+    .filter-pills { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+    .summary { grid-template-columns: repeat(2, minmax(90px, 1fr)); }
+    .featured-grid,
+    .board-grid { grid-template-columns: 1fr; }
+    .section-head { align-items: flex-start; flex-direction: column; gap: 4px; }
+    .section-note { white-space: normal; }
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="top-ribbon">
+      <div class="top-inner">
+        <div class="brand">
+          <div class="brand-mark">A</div>
+          <div class="brand-name">Agent Monitor</div>
+        </div>
+        <div class="mode-row">
+          <div class="mode-chip live"><span class="live-dot"></span>ライブ</div>
+          <div class="mode-chip">24時間</div>
+          <div class="mode-chip">Codex / Claude Code</div>
+          <div class="ticker"><span id="ticker-text">ローカルの稼働状況を読み込み中</span></div>
+        </div>
+        <div class="updated" id="updated">--:-- 更新</div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div class="filters">
+        <input id="search" class="search" type="search" placeholder="名前・作業内容・種類で検索" />
+        <div class="filter-pills" id="filters">
+          <button class="filter-btn active" data-filter="all">全員</button>
+          <button class="filter-btn" data-filter="running">稼働中</button>
+          <button class="filter-btn" data-filter="idle">待機</button>
+          <button class="filter-btn" data-filter="error">エラー</button>
+          <button class="filter-btn" data-filter="codex">Codex</button>
+          <button class="filter-btn" data-filter="claude-code">Claude</button>
+        </div>
+      </div>
+
+      <section class="summary" aria-label="summary">
+        <div class="metric"><div class="metric-label">合計</div><div class="metric-value" id="metric-total">0</div></div>
+        <div class="metric running"><div class="metric-label">稼働中</div><div class="metric-value" id="metric-running">0</div></div>
+        <div class="metric ok"><div class="metric-label">待機</div><div class="metric-value" id="metric-idle">0</div></div>
+        <div class="metric error"><div class="metric-label">エラー</div><div class="metric-value" id="metric-error">0</div></div>
+        <div class="metric source"><div class="metric-label">Codex</div><div class="metric-value" id="metric-codex">0</div></div>
+        <div class="metric source"><div class="metric-label">Claude</div><div class="metric-value" id="metric-claude">0</div></div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h1>いま動いているAIチーム</h1>
+          <div class="section-note" id="featured-note">実データだけを表示</div>
+        </div>
+        <div class="featured-grid" id="featured-grid"></div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>エージェント一覧</h2>
+          <div class="section-note" id="board-note">-- 件</div>
+        </div>
+        <div class="board-grid" id="board-grid"></div>
+      </section>
+
+      <section class="bottom-area">
+        <div class="panel">
+          <h2>最近の動き</h2>
+          <div class="activity-list" id="activity-list"></div>
+        </div>
+        <div class="panel">
+          <h2>仕事の種類</h2>
+          <div class="type-list" id="type-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script>
+  if (window.location.protocol === "file:") {
+    window.location.replace("http://127.0.0.1:8799/");
+  }
+
+  const AVATAR_COUNT = 24;
+  const AVATAR_VERSION = "centered-avatar-3";
+  const REFRESH_MS = 3000;
+  const state = {
+    agents: [],
+    activity: [],
+    summary: {},
+    filter: "all",
+    search: "",
+    lastGeneratedAt: null
+  };
+
+  const byId = (id) => document.getElementById(id);
+  const els = {
+    search: byId("search"),
+    filters: byId("filters"),
+    featuredGrid: byId("featured-grid"),
+    boardGrid: byId("board-grid"),
+    activityList: byId("activity-list"),
+    typeList: byId("type-list"),
+    ticker: byId("ticker-text"),
+    updated: byId("updated"),
+    featuredNote: byId("featured-note"),
+    boardNote: byId("board-note"),
+    total: byId("metric-total"),
+    running: byId("metric-running"),
+    idle: byId("metric-idle"),
+    error: byId("metric-error"),
+    codex: byId("metric-codex"),
+    claude: byId("metric-claude")
+  };
+
+  function cleanText(value, fallback = "") {
+    return String(value || fallback)
+      .replace(/^Automation:\s*/i, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function hashText(text) {
+    let h = 2166136261;
+    for (let i = 0; i < text.length; i += 1) {
+      h ^= text.charCodeAt(i);
+      h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+    }
+    return Math.abs(h >>> 0);
+  }
+
+  function avatarFor(agent, index = 0) {
+    const key = agent.id || agent.headline || `${agent.source}-${index}`;
+    const num = (hashText(key) % AVATAR_COUNT) + 1;
+    return `assets/avatars/avatar-${String(num).padStart(2, "0")}.png?v=${AVATAR_VERSION}`;
+  }
+
+  function jobBaseName(agent) {
+    const text = `${agent.job_type || ""} ${agent.headline || ""} ${agent.skill || ""}`;
+    if (/SNS|コンテンツ|Instagram|Threads|note|リール|投稿/.test(text)) return "SNS担当";
+    if (/営業|新規事業|競合|案件|市場/.test(text)) return "営業リサーチ担当";
+    if (/経理|請求|精算|invoice/.test(text)) return "経理チェック担当";
+    if (/採用|求人|面接|応募/.test(text)) return "採用確認担当";
+    if (/資料|スライド|プレゼン/.test(text)) return "資料まとめ担当";
+    if (/文字起こし|議事録/.test(text)) return "議事録整理担当";
+    if (/デザイン|UI|UX|画面/.test(text)) return "デザイン確認担当";
+    if (/開発|エンジニアリング|コード|実装|バグ|DB/.test(text)) return "実装チェック担当";
+    if (/秘書|自動化|定型/.test(text)) return "タスク整理担当";
+    return "リサーチ担当";
+  }
+
+  function displayName(agent, index, allAgents) {
+    const explicit = cleanText(agent.nickname);
+    if (explicit) return explicit;
+    const base = jobBaseName(agent);
+    const sameBase = allAgents.filter((item) => !cleanText(item.nickname) && jobBaseName(item) === base);
+    if (sameBase.length <= 1) return base;
+    const nth = sameBase.findIndex((item) => (item.id || item.headline) === (agent.id || agent.headline)) + 1;
+    return `${base}${toCircledNumber(nth)}`;
+  }
+
+  function toCircledNumber(n) {
+    const chars = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
+    return chars[n] || ` ${n}`;
+  }
+
+  function statusLabel(status) {
+    if (status === "running") return "作業中";
+    if (status === "error") return "要確認";
+    return "待機中";
+  }
+
+  function sourceLabel(source) {
+    if (source === "claude-code") return "Claude";
+    return "Codex";
+  }
+
+  function elapsedLabel(agent) {
+    const now = Date.now();
+    const start = agent.running_since_ms || agent.updated_at_ms || agent.created_at_ms;
+    if (!start) return "";
+    const diff = Math.max(0, now - start);
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return "たった今";
+    if (min < 60) return `${min}分前`;
+    const hours = Math.floor(min / 60);
+    if (hours < 24) return `${hours}時間前`;
+    return `${Math.floor(hours / 24)}日前`;
+  }
+
+  function matchFilter(agent) {
+    if (state.filter === "all") return true;
+    if (["running", "idle", "error"].includes(state.filter)) return agent.status === state.filter;
+    return agent.source === state.filter;
+  }
+
+  function matchSearch(agent) {
+    if (!state.search) return true;
+    const hay = [
+      agent._displayName,
+      agent.headline,
+      agent.role,
+      agent.job_type,
+      agent.skill,
+      agent.current_tool,
+      agent.source
+    ].join(" ").toLowerCase();
+    return hay.includes(state.search.toLowerCase());
+  }
+
+  function visibleAgents() {
+    return state.agents.filter((agent) => matchFilter(agent) && matchSearch(agent));
+  }
+
+  function updateMetrics() {
+    const agents = state.agents;
+    const summary = state.summary || {};
+    const codex = agents.filter((a) => a.source === "codex").length;
+    const claude = agents.filter((a) => a.source === "claude-code").length;
+    els.total.textContent = summary.total ?? agents.length;
+    els.running.textContent = summary.running ?? agents.filter((a) => a.status === "running").length;
+    els.idle.textContent = summary.idle ?? agents.filter((a) => a.status === "idle").length;
+    els.error.textContent = summary.error ?? agents.filter((a) => a.status === "error").length;
+    els.codex.textContent = codex;
+    els.claude.textContent = claude;
+  }
+
+  function renderStatus(agent) {
+    const text = statusLabel(agent.status);
+    if (agent.status !== "running") return `<span>${text}</span>`;
+    return `<span>${text}</span><span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>`;
+  }
+
+  function renderLayers(agent, allAgents) {
+    const children = Array.isArray(agent.children) ? agent.children : [];
+    const parts = [];
+    children.slice(0, 3).forEach((child, idx) => {
+      const childName = displayName(child, idx, allAgents.concat(children));
+      const childTask = cleanText(child.headline, "サブエージェント");
+      parts.push(`
+        <div class="layer">
+          <div class="layer-icon">部</div>
+          <div class="layer-text">
+            <div class="layer-name">${escapeHtml(childName)}</div>
+            <div class="layer-detail">${escapeHtml(childTask)}</div>
+          </div>
+        </div>
+      `);
+    });
+    if (agent.skill) {
+      parts.push(`
+        <div class="layer">
+          <div class="layer-icon">技</div>
+          <div class="layer-text">
+            <div class="layer-name">スキル実行</div>
+            <div class="layer-detail">${escapeHtml(agent.skill)}</div>
+          </div>
+        </div>
+      `);
+    }
+    return parts.length ? `<div class="layers">${parts.join("")}</div>` : "";
+  }
+
+  function renderCard(agent, index, options = {}) {
+    const featured = options.featured ? " featured" : "";
+    const task = cleanText(agent.headline, "作業内容なし");
+    const role = cleanText(agent.role, agent.model || "AIエージェント");
+    const src = agent.source || "codex";
+    const job = cleanText(agent.job_type, "その他");
+    const tool = cleanText(agent.current_tool || agent.skill || "");
+    const detail = tool ? `${tool} / ${elapsedLabel(agent)}` : elapsedLabel(agent);
+    return `
+      <article class="agent-card ${agent.status || "idle"}${featured}">
+        <div class="card-top">
+          <div class="avatar-wrap">
+            <img class="avatar" src="${avatarFor(agent, index)}" alt="" loading="lazy" />
+            <span class="status-bubble ${agent.status || "idle"}"></span>
+          </div>
+          <div class="agent-meta">
+            <div class="name-line">
+              <div class="agent-name">${escapeHtml(agent._displayName)}</div>
+              <span class="source-tag ${src}">${sourceLabel(src)}</span>
+            </div>
+            <div class="role-line">${escapeHtml(role)}</div>
+            <div class="status-line">${renderStatus(agent)}</div>
+          </div>
+        </div>
+        <div class="task-box">
+          <div class="task-title">${escapeHtml(task)}</div>
+          <div class="task-sub">
+            <span class="guess">推測: ${escapeHtml(job)}</span>
+            ${detail ? `<span>${escapeHtml(detail)}</span>` : ""}
+          </div>
+        </div>
+        ${renderLayers(agent, state.agents)}
+      </article>
+    `;
+  }
+
+  function renderFeatured() {
+    const running = visibleAgents().filter((agent) => agent.status === "running");
+    const featured = running.slice(0, 3);
+    els.featuredNote.textContent = running.length ? `${running.length}件が稼働中` : "いま動いているエージェントはありません";
+    if (!featured.length) {
+      els.featuredGrid.innerHTML = `<div class="empty-state">稼働中のエージェントが出たら、ここに大きく表示されます。</div>`;
+      return;
+    }
+    els.featuredGrid.innerHTML = featured.map((agent, index) => renderCard(agent, index, { featured: true })).join("");
+  }
+
+  function renderBoard() {
+    const agents = visibleAgents();
+    els.boardNote.textContent = `${agents.length} 件`;
+    if (!agents.length) {
+      els.boardGrid.innerHTML = `<div class="empty-state">条件に合うエージェントがありません。</div>`;
+      return;
+    }
+    els.boardGrid.innerHTML = agents.map((agent, index) => renderCard(agent, index)).join("");
+  }
+
+  function renderActivity() {
+    const activity = Array.isArray(state.activity) ? state.activity.slice(0, 8) : [];
+    if (!activity.length) {
+      els.activityList.innerHTML = `<div class="empty-state">最近の動きはまだありません。</div>`;
+      return;
+    }
+    els.activityList.innerHTML = activity.map((item) => `
+      <div class="activity-item">
+        <span class="activity-dot ${item.status || "idle"}"></span>
+        <div class="activity-label">${escapeHtml(cleanText(item.label, "無題"))}</div>
+        <div class="activity-time">${escapeHtml(relativeTime(item.ts_ms))}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderTypes() {
+    const counts = new Map();
+    state.agents.forEach((agent) => {
+      const key = cleanText(agent.job_type, "その他");
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    const rows = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+    const max = Math.max(1, ...rows.map((row) => row[1]));
+    if (!rows.length) {
+      els.typeList.innerHTML = `<div class="empty-state">分類できるエージェントがありません。</div>`;
+      return;
+    }
+    els.typeList.innerHTML = rows.map(([name, count]) => `
+      <div class="type-row">
+        <span class="activity-dot"></span>
+        <div class="type-name">${escapeHtml(name)} <span class="guess">推測</span></div>
+        <div class="type-count">${count}</div>
+        <div class="type-bar"><span style="width:${Math.round(count / max * 100)}%"></span></div>
+      </div>
+    `).join("");
+  }
+
+  function updateTicker() {
+    const running = state.agents.filter((agent) => agent.status === "running");
+    const target = running[0] || state.agents[0];
+    if (!target) {
+      els.ticker.textContent = "ローカルの稼働状況を読み込み中";
+      return;
+    }
+    const prefix = target.status === "running" ? `${target._displayName} が作業中` : `${target._displayName} は待機中`;
+    els.ticker.textContent = `${prefix}: ${cleanText(target.headline, "作業内容なし")}`;
+  }
+
+  function renderAll() {
+    updateMetrics();
+    renderFeatured();
+    renderBoard();
+    renderActivity();
+    renderTypes();
+    updateTicker();
+  }
+
+  function normalizeAgent(agent, index, allAgents) {
+    const next = { ...agent };
+    next.status = next.status || "idle";
+    next.source = next.source || "codex";
+    next.headline = cleanText(next.headline, cleanText(next.title, "作業内容なし"));
+    next.job_type = cleanText(next.job_type, "その他");
+    next._displayName = displayName(next, index, allAgents);
+    return next;
+  }
+
+  async function fetchState() {
+    try {
+      const res = await fetch("/api/state", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const rawAgents = Array.isArray(data.agents) ? data.agents : [];
+      state.agents = rawAgents.map((agent, index) => normalizeAgent(agent, index, rawAgents));
+      state.activity = Array.isArray(data.activity) ? data.activity : [];
+      state.summary = data.summary || {};
+      state.lastGeneratedAt = data.generated_at_ms || Date.now();
+      els.updated.textContent = `${formatClock(state.lastGeneratedAt)} 更新`;
+      renderAll();
+    } catch (err) {
+      els.updated.textContent = "取得エラー";
+      els.ticker.textContent = "server.py の /api/state に接続できません";
+      els.featuredGrid.innerHTML = `<div class="empty-state">データ取得に失敗しました。server.py が起動しているか確認してください。</div>`;
+      els.boardGrid.innerHTML = "";
+      els.activityList.innerHTML = "";
+      els.typeList.innerHTML = "";
+    }
+  }
+
+  function relativeTime(ms) {
+    if (!ms) return "--";
+    const diff = Math.max(0, Date.now() - ms);
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return "今";
+    if (min < 60) return `${min}分前`;
+    const hours = Math.floor(min / 60);
+    if (hours < 24) return `${hours}時間前`;
+    return `${Math.floor(hours / 24)}日前`;
+  }
+
+  function formatClock(ms) {
+    const date = new Date(ms || Date.now());
+    return date.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  els.search.addEventListener("input", (event) => {
+    state.search = event.target.value.trim();
+    renderFeatured();
+    renderBoard();
+  });
+
+  els.filters.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-filter]");
+    if (!button) return;
+    state.filter = button.dataset.filter;
+    els.filters.querySelectorAll(".filter-btn").forEach((btn) => btn.classList.toggle("active", btn === button));
+    renderFeatured();
+    renderBoard();
+  });
+
+  fetchState();
+  setInterval(fetchState, REFRESH_MS);
+</script>
+</body>
+</html>

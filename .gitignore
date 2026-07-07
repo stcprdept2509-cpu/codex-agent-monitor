@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.DS_Store
+.claude/
+.vercel/
+
+# Local verification screenshots and temporary avatar checks.
+agent-monitor-ui-*.png
+avatar-check-*.png
+assets/avatar-sheet.png
+assets/avatars-clean-*/
+assets/avatars-original/
