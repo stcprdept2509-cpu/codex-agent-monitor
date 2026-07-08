@@ -114,7 +114,7 @@ THREAD_COLUMNS = """
 def db():
     if not DB_PATH.exists():
         raise FileNotFoundError(f"Codex database not found: {DB_PATH}")
-    return sqlite3.connect(f"file:{DB_PATH}?mode=ro", uri=True)
+    return sqlite3.connect(f"file:{DB_PATH}?mode=ro&immutable=1", uri=True)
 
 
 def fetch_recent_threads(conn, now_ms):

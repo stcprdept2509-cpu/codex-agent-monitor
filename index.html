@@ -712,11 +712,32 @@
     claude: byId("metric-claude")
   };
 
-  function cleanText(value, fallback = "") {
-    return String(value || fallback)
-      .replace(/^Automation:\s*/i, "")
+  function stripTechnicalLocations(value) {
+    return String(value || "")
+      .replace(/file:\/\/\/[^\s)]+/g, "")
+      .replace(/~\/[^\s)]+/g, "")
+      .replace(/\/Users\/[^\s)]+/g, "")
+      .replace(/(?:^|\s)(?:cwd|path|folder|dir|directory|workspace|project)[:=]\s*[^\s)]+/gi, " ")
+      .replace(/(?:^|\s)(?:フォルダ|ディレクトリ|保存場所|作業場所)[:：]\s*[^\s)]+/g, " ")
+      .replace(/\b[a-z0-9_.-]+\/(?:[a-z0-9_.-]+\/)+[a-z0-9_.-]+\b/gi, "")
+      .replace(/\s*[-–—|｜:：]\s*$/g, "")
+      .replace(/^\s*[-–—|｜:：]\s*/g, "")
       .replace(/\s+/g, " ")
       .trim();
+  }
+
+  function cleanText(value, fallback = "") {
+    const text = stripTechnicalLocations(String(value || "").replace(/^Automation:\s*/i, ""));
+    if (text) return text;
+    return stripTechnicalLocations(fallback) || "作業内容を確認中";
+  }
+
+  function humanizeActivity(value) {
+    const text = cleanText(value, "");
+    if (!text) return "";
+    if (/^[a-z0-9_.-]+:[a-z0-9_. -]+$/i.test(text)) return "外部ツール実行";
+    if (/^[a-z0-9_.-]+-[a-z0-9_.-]+(?:-[a-z0-9_.-]+)+$/i.test(text)) return "専門スキル実行";
+    return text;
   }
 
   function hashText(text) {
@@ -852,7 +873,7 @@
           <div class="layer-icon">技</div>
           <div class="layer-text">
             <div class="layer-name">スキル実行</div>
-            <div class="layer-detail">${escapeHtml(agent.skill)}</div>
+            <div class="layer-detail">${escapeHtml(humanizeActivity(agent.skill))}</div>
           </div>
         </div>
       `);
@@ -866,7 +887,7 @@
     const role = cleanText(agent.role, agent.model || "AIエージェント");
     const src = agent.source || "codex";
     const job = cleanText(agent.job_type, "その他");
-    const tool = cleanText(agent.current_tool || agent.skill || "");
+    const tool = humanizeActivity(agent.current_tool || agent.skill || "");
     const detail = tool ? `${tool} / ${elapsedLabel(agent)}` : elapsedLabel(agent);
     return `
       <article class="agent-card ${agent.status || "idle"}${featured}">
@@ -962,7 +983,7 @@
       return;
     }
     const prefix = target.status === "running" ? `${target._displayName} が作業中` : `${target._displayName} は待機中`;
-    els.ticker.textContent = `${prefix}: ${cleanText(target.headline, "作業内容なし")}`;
+    els.ticker.textContent = `${prefix}: ${cleanText(target.headline, "作業内容を確認中")}`;
   }
 
   function renderAll() {
