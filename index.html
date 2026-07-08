@@ -715,6 +715,7 @@
   function stripTechnicalLocations(value) {
     return String(value || "")
       .replace(/file:\/\/\/[^\s)]+/g, "")
+      .replace(/https?:\/\/[^\s)]+/g, "")
       .replace(/~\/[^\s)]+/g, "")
       .replace(/\/Users\/[^\s)]+/g, "")
       .replace(/(?:^|\s)(?:cwd|path|folder|dir|directory|workspace|project)[:=]\s*[^\s)]+/gi, " ")
@@ -726,17 +727,56 @@
       .trim();
   }
 
+  function isInternalLabel(value) {
+    const text = String(value || "").trim();
+    return !text
+      || /^Use\s+\$[a-z0-9_.-]+\.?$/i.test(text)
+      || /^\$[a-z0-9_.-]+$/i.test(text)
+      || /^gpt[-\w.]*$/i.test(text)
+      || /^codex-auto-review$/i.test(text)
+      || /^The following is the Codex agent history/i.test(text)
+      || /^Codex ran out of room/i.test(text)
+      || /^https?:\/\/?/i.test(text);
+  }
+
+  function friendlyInternalLabel(value, fallback = "作業内容を確認中") {
+    const text = String(value || "").trim();
+    if (/^codex-auto-review$/i.test(text)) return "レビュー担当";
+    if (/^Codex ran out of room/i.test(text)) return "前の作業を引き継ぎ中";
+    if (/^The following is the Codex agent history/i.test(text)) return "レビュー内容を確認中";
+    if (/^https?:\/\//i.test(text)) return "Webページ確認中";
+    return fallback;
+  }
+
   function cleanText(value, fallback = "") {
-    const text = stripTechnicalLocations(String(value || "").replace(/^Automation:\s*/i, ""));
-    if (text) return text;
-    return stripTechnicalLocations(fallback) || "作業内容を確認中";
+    const raw = String(value || "").replace(/^Automation:\s*/i, "");
+    if (/^https?:\/\//i.test(raw.trim())) return friendlyInternalLabel(raw, "Webページ確認中");
+    const stripped = stripTechnicalLocations(raw);
+    if (stripped && !isInternalLabel(stripped)) return stripped;
+    const friendly = friendlyInternalLabel(raw, "");
+    if (friendly) return friendly;
+    const fallbackText = stripTechnicalLocations(fallback);
+    if (fallbackText && !isInternalLabel(fallbackText)) return fallbackText;
+    return friendlyInternalLabel(fallback, "作業内容を確認中");
+  }
+
+  function cleanDisplayName(value) {
+    const text = cleanText(value, "");
+    if (!text || text === "作業内容を確認中" || text === "作業内容なし" || text === "Webページ確認中") return "";
+    return text;
+  }
+
+  function cleanRole(agent) {
+    const role = cleanText(agent.role, "");
+    if (role && role !== "作業内容を確認中") return role;
+    return "AIエージェント";
   }
 
   function humanizeActivity(value) {
     const text = cleanText(value, "");
-    if (!text) return "";
+    if (!text || text === "作業内容を確認中") return "";
     if (/^[a-z0-9_.-]+:[a-z0-9_. -]+$/i.test(text)) return "外部ツール実行";
-    if (/^[a-z0-9_.-]+-[a-z0-9_.-]+(?:-[a-z0-9_.-]+)+$/i.test(text)) return "専門スキル実行";
+    if (/^[a-z0-9_.-]+-[a-z0-9_.-]+(?:-[a-z0-9_.-]+)+$/i.test(text)) return "専門作業";
     return text;
   }
 
@@ -770,10 +810,10 @@
   }
 
   function displayName(agent, index, allAgents) {
-    const explicit = cleanText(agent.nickname);
+    const explicit = cleanDisplayName(agent.nickname);
     if (explicit) return explicit;
     const base = jobBaseName(agent);
-    const sameBase = allAgents.filter((item) => !cleanText(item.nickname) && jobBaseName(item) === base);
+    const sameBase = allAgents.filter((item) => !cleanDisplayName(item.nickname) && jobBaseName(item) === base);
     if (sameBase.length <= 1) return base;
     const nth = sameBase.findIndex((item) => (item.id || item.headline) === (agent.id || agent.headline)) + 1;
     return `${base}${toCircledNumber(nth)}`;
@@ -872,8 +912,8 @@
         <div class="layer">
           <div class="layer-icon">技</div>
           <div class="layer-text">
-            <div class="layer-name">スキル実行</div>
-            <div class="layer-detail">${escapeHtml(humanizeActivity(agent.skill))}</div>
+            <div class="layer-name">専門作業</div>
+            <div class="layer-detail">${escapeHtml(humanizeActivity(agent.skill) || "確認中")}</div>
           </div>
         </div>
       `);
@@ -883,8 +923,8 @@
 
   function renderCard(agent, index, options = {}) {
     const featured = options.featured ? " featured" : "";
-    const task = cleanText(agent.headline, "作業内容なし");
-    const role = cleanText(agent.role, agent.model || "AIエージェント");
+    const task = cleanText(agent.headline, "作業内容を確認中");
+    const role = cleanRole(agent);
     const src = agent.source || "codex";
     const job = cleanText(agent.job_type, "その他");
     const tool = humanizeActivity(agent.current_tool || agent.skill || "");
