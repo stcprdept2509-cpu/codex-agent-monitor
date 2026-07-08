@@ -626,7 +626,7 @@
 
     <main class="main">
       <div class="filters">
-        <input id="search" class="search" type="search" placeholder="名前・作業内容・種類で検索" />
+        <input id="search" class="search" type="search" placeholder="担当名・種類で検索" />
         <div class="filter-pills" id="filters">
           <button class="filter-btn active" data-filter="all">全員</button>
           <button class="filter-btn" data-filter="running">稼働中</button>
@@ -858,7 +858,6 @@
     if (!state.search) return true;
     const hay = [
       agent._displayName,
-      agent.headline,
       agent.role,
       agent.job_type,
       agent.skill,
@@ -891,12 +890,18 @@
     return `<span>${text}</span><span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>`;
   }
 
+  function taskLabel(agent, job) {
+    if (agent.status === "running") return `${job}を処理中`;
+    if (agent.status === "error") return `${job}で確認が必要`;
+    return `${job}で待機中`;
+  }
+
   function renderLayers(agent, allAgents) {
     const children = Array.isArray(agent.children) ? agent.children : [];
     const parts = [];
     children.slice(0, 3).forEach((child, idx) => {
       const childName = displayName(child, idx, allAgents.concat(children));
-      const childTask = cleanText(child.headline, "サブエージェント");
+      const childTask = taskLabel(child, jobBaseName(child));
       parts.push(`
         <div class="layer">
           <div class="layer-icon">部</div>
@@ -923,10 +928,10 @@
 
   function renderCard(agent, index, options = {}) {
     const featured = options.featured ? " featured" : "";
-    const task = cleanText(agent.headline, "作業内容を確認中");
     const role = cleanRole(agent);
     const src = agent.source || "codex";
     const job = cleanText(agent.job_type, "その他");
+    const task = taskLabel(agent, job);
     const tool = humanizeActivity(agent.current_tool || agent.skill || "");
     const detail = tool ? `${tool} / ${elapsedLabel(agent)}` : elapsedLabel(agent);
     return `
@@ -979,16 +984,19 @@
   }
 
   function renderActivity() {
-    const activity = Array.isArray(state.activity) ? state.activity.slice(0, 8) : [];
-    if (!activity.length) {
+    const agents = state.agents
+      .slice()
+      .sort((a, b) => (b.updated_at_ms || 0) - (a.updated_at_ms || 0))
+      .slice(0, 8);
+    if (!agents.length) {
       els.activityList.innerHTML = `<div class="empty-state">最近の動きはまだありません。</div>`;
       return;
     }
-    els.activityList.innerHTML = activity.map((item) => `
+    els.activityList.innerHTML = agents.map((agent) => `
       <div class="activity-item">
-        <span class="activity-dot ${item.status || "idle"}"></span>
-        <div class="activity-label">${escapeHtml(cleanText(item.label, "無題"))}</div>
-        <div class="activity-time">${escapeHtml(relativeTime(item.ts_ms))}</div>
+        <span class="activity-dot ${agent.status || "idle"}"></span>
+        <div class="activity-label">${escapeHtml(taskLabel(agent, cleanText(agent.job_type, "その他")))}</div>
+        <div class="activity-time">${escapeHtml(relativeTime(agent.updated_at_ms))}</div>
       </div>
     `).join("");
   }
@@ -1022,8 +1030,7 @@
       els.ticker.textContent = "ローカルの稼働状況を読み込み中";
       return;
     }
-    const prefix = target.status === "running" ? `${target._displayName} が作業中` : `${target._displayName} は待機中`;
-    els.ticker.textContent = `${prefix}: ${cleanText(target.headline, "作業内容を確認中")}`;
+    els.ticker.textContent = taskLabel(target, cleanText(target.job_type, "その他"));
   }
 
   function renderAll() {
