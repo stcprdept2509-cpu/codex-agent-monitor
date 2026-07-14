@@ -6,52 +6,58 @@
 <title>Agent Monitor</title>
 <style>
   :root {
-    --bg: #ffffff;
-    --paper: #ffffff;
-    --paper-2: #faf8f2;
-    --ink: #202124;
-    --muted: #74706a;
-    --line: #e3ddd2;
-    --line-strong: #bdb5a8;
-    --navy: #0f2a43;
-    --navy-2: #193a59;
-    --yellow: #e7c75c;
-    --yellow-2: #f6e6aa;
-    --green: #4f9c68;
-    --green-soft: #dceadb;
-    --red: #e54747;
-    --red-soft: #f6d8d0;
-    --blue: #4d79a9;
-    --blue-soft: #dfe9f3;
-    --shadow: 0 14px 34px rgba(38, 31, 22, .09);
-    --radius: 8px;
+    --ink: #f8f1d6;
+    --muted: #b8c0cf;
+    --dark: #11172a;
+    --wall: #0a1020;
+    --wall-2: #182238;
+    --wood-a: #7b4a27;
+    --wood-b: #6b3d20;
+    --wood-line: rgba(39, 21, 12, .32);
+    --carpet: #2f6f9d;
+    --carpet-dark: #255577;
+    --label: rgba(18, 16, 28, .86);
+    --label-border: #5b5e7a;
+    --yellow: #ffd44d;
+    --blue: #5ea8ff;
+    --green: #6ee185;
+    --red: #ff5872;
+    --cream: #efe3c8;
+    --shadow: 0 18px 50px rgba(0, 0, 0, .32);
+    --pixel: 4px;
   }
 
   * { box-sizing: border-box; }
   html, body { min-height: 100%; }
   body {
     margin: 0;
-    background: var(--bg);
     color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "YuGothic", sans-serif;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Hiragino Sans", "Yu Gothic", monospace;
+    background:
+      linear-gradient(180deg, rgba(10, 14, 28, .82), rgba(11, 18, 34, .96)),
+      repeating-linear-gradient(0deg, #111827 0 2px, #0f172a 2px 4px);
+    overflow-x: hidden;
   }
 
   button, input { font: inherit; }
-  .app { min-height: 100vh; display: flex; flex-direction: column; }
+  .app { min-height: 100vh; }
 
   .top-ribbon {
-    background: var(--navy);
-    color: #fff;
-    border-bottom: 4px solid var(--yellow);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: #0c1325;
+    border-bottom: 4px solid #000;
+    box-shadow: 0 4px 0 #22304a;
   }
   .top-inner {
-    max-width: 1320px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 10px 18px;
+    padding: 10px 14px;
     display: grid;
     grid-template-columns: auto 1fr auto;
-    gap: 14px;
     align-items: center;
+    gap: 12px;
   }
   .brand {
     display: flex;
@@ -60,19 +66,19 @@
     min-width: 0;
   }
   .brand-mark {
-    width: 26px;
-    height: 26px;
-    border-radius: 7px;
+    width: 28px;
+    height: 28px;
+    color: #13213a;
     background: var(--yellow);
-    color: var(--navy);
+    border: 3px solid #000;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, .55);
     display: grid;
     place-items: center;
     font-weight: 900;
-    line-height: 1;
   }
   .brand-name {
     font-size: 15px;
-    font-weight: 800;
+    font-weight: 900;
     white-space: nowrap;
   }
   .mode-row {
@@ -82,49 +88,47 @@
     gap: 8px;
     overflow: hidden;
   }
-  .mode-chip {
+  .mode-chip,
+  .filter-btn {
     height: 30px;
-    border-radius: 7px;
-    border: 1px solid rgba(255,255,255,.14);
-    padding: 0 10px;
+    border: 2px solid #000;
+    background: #1b2944;
+    color: var(--ink);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, .5);
+    padding: 0 9px;
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    color: rgba(255,255,255,.84);
-    background: rgba(255,255,255,.08);
-    font-size: 12px;
-    font-weight: 700;
+    font-size: 11px;
+    font-weight: 900;
     white-space: nowrap;
   }
   .mode-chip.live {
-    background: #fff;
-    color: var(--navy);
-    border-color: transparent;
+    color: #15120a;
+    background: var(--yellow);
   }
   .live-dot {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
     background: var(--red);
-    box-shadow: 0 0 0 0 rgba(229,71,71,.55);
-    animation: livePulse 1.3s ease-out infinite;
+    border: 2px solid #000;
+    animation: blinkPixel .7s steps(2, end) infinite;
   }
-  @keyframes livePulse {
-    0% { box-shadow: 0 0 0 0 rgba(229,71,71,.55); }
-    100% { box-shadow: 0 0 0 9px rgba(229,71,71,0); }
-  }
+  @keyframes blinkPixel { 50% { opacity: .25; } }
   .ticker {
-    min-width: 120px;
+    min-width: 220px;
+    max-width: 520px;
     height: 30px;
-    border-radius: 7px;
-    border: 1px solid rgba(255,255,255,.16);
-    padding: 0 12px;
+    padding: 0 10px;
     display: flex;
     align-items: center;
+    color: #0e1320;
+    background: #f3ead0;
+    border: 2px solid #000;
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, .5);
     overflow: hidden;
-    background: #fff;
-    color: var(--ink);
     font-size: 12px;
+    font-weight: 900;
   }
   .ticker span {
     white-space: nowrap;
@@ -132,401 +136,453 @@
     text-overflow: ellipsis;
   }
   .updated {
+    color: #e8e2c5;
     font-size: 11px;
-    color: rgba(255,255,255,.72);
     white-space: nowrap;
   }
 
   .main {
-    max-width: 1320px;
-    width: 100%;
+    width: min(1280px, 100%);
     margin: 0 auto;
-    padding: 16px 18px 42px;
+    padding: 18px 14px 40px;
   }
-  .filters {
+  .controls {
     display: grid;
-    grid-template-columns: minmax(190px, 1fr) auto;
+    grid-template-columns: minmax(200px, 1fr) auto;
     gap: 12px;
-    margin: 0 0 14px;
+    margin-bottom: 14px;
     align-items: center;
   }
   .search {
-    width: 100%;
     height: 40px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--paper);
+    width: 100%;
     color: var(--ink);
-    padding: 0 13px;
+    background: #151d31;
+    border: 3px solid #000;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, .48);
+    padding: 0 12px;
     outline: none;
-    box-shadow: 0 1px 0 rgba(255,255,255,.8) inset;
   }
-  .search:focus { border-color: var(--navy-2); }
+  .search::placeholder { color: #798294; }
   .filter-pills {
     display: flex;
-    flex-wrap: wrap;
     justify-content: flex-end;
+    flex-wrap: wrap;
     gap: 8px;
   }
   .filter-btn {
-    height: 38px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: rgba(255,255,255,.52);
-    color: var(--muted);
-    padding: 0 11px;
     cursor: pointer;
-    font-size: 12px;
-    font-weight: 800;
   }
   .filter-btn.active {
-    background: var(--navy);
-    border-color: var(--navy);
-    color: #fff;
+    background: var(--yellow);
+    color: #15120a;
   }
 
-  .summary {
+  .hud {
     display: grid;
     grid-template-columns: repeat(6, minmax(92px, 1fr));
     gap: 10px;
-    margin: 0 0 18px;
+    margin-bottom: 16px;
   }
   .metric {
-    background: var(--paper);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    min-height: 72px;
-    padding: 10px 12px;
-    box-shadow: 0 1px 0 rgba(255,255,255,.75) inset;
+    min-height: 70px;
+    color: #101523;
+    background: #eadfca;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, .55);
+    padding: 9px 11px;
   }
   .metric-label {
-    color: var(--muted);
+    color: #55606f;
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 900;
   }
   .metric-value {
-    margin-top: 6px;
-    font-size: 24px;
+    margin-top: 5px;
+    font-size: 28px;
     line-height: 1;
     font-weight: 900;
     font-variant-numeric: tabular-nums;
   }
-  .metric.running .metric-value { color: var(--red); }
-  .metric.ok .metric-value { color: var(--green); }
-  .metric.error .metric-value { color: var(--red); }
-  .metric.source .metric-value { color: var(--blue); }
+  .metric.running .metric-value { color: #e23f54; }
+  .metric.ok .metric-value { color: #2c9d55; }
+  .metric.error .metric-value { color: #d13a3a; }
+  .metric.source .metric-value { color: #2a72ad; }
 
   .section-head {
     display: flex;
     align-items: end;
     justify-content: space-between;
     gap: 12px;
-    margin: 20px 0 10px;
+    margin: 18px 0 10px;
   }
   .section-head h1,
   .section-head h2 {
     margin: 0;
-    font-size: 18px;
-    line-height: 1.25;
+    color: #fff0b8;
+    text-shadow: 3px 3px 0 #000;
+    font-size: 20px;
+    line-height: 1.2;
   }
   .section-note {
     color: var(--muted);
     font-size: 12px;
+    font-weight: 800;
     white-space: nowrap;
   }
 
-  .featured-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-  }
-  .board-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
-    gap: 14px;
-  }
-
-  .agent-card {
+  .studio-wrap {
     position: relative;
-    min-width: 0;
-    background: #fff;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 14px;
-    box-shadow: 0 1px 0 rgba(255,255,255,.86) inset;
+    border: 4px solid #000;
+    background: #0b1020;
+    box-shadow: var(--shadow), 6px 6px 0 rgba(0, 0, 0, .54);
     overflow: hidden;
   }
-  .agent-card.featured {
-    min-height: 206px;
-    box-shadow: var(--shadow);
+  .studio-map {
+    position: relative;
+    min-height: 620px;
+    isolation: isolate;
+    background: #111827;
   }
-  .agent-card.running {
-    border-color: #bdb09b;
-  }
-  .agent-card.running::before {
+  .studio-map::before {
     content: "";
     position: absolute;
-    inset: 0 auto 0 0;
-    width: 4px;
-    background: var(--red);
-    animation: sideBlink 1.08s infinite;
+    inset: 0;
+    z-index: 0;
+    background:
+      linear-gradient(90deg, transparent 49.5%, #050812 49.5% 50.5%, transparent 50.5%),
+      linear-gradient(180deg, transparent 69%, #050812 69% 70.2%, transparent 70.2%);
+    pointer-events: none;
   }
-  @keyframes sideBlink {
-    0%, 100% { opacity: .28; }
-    50% { opacity: 1; }
-  }
-  .agent-card.error {
-    border-color: #e5a299;
-    background: #fff8f5;
-  }
-  .card-top {
-    display: flex;
-    align-items: flex-start;
-    gap: 11px;
-  }
-  .avatar-wrap {
-    position: relative;
-    flex: 0 0 auto;
-    width: 72px;
-    height: 72px;
-    display: block;
-    overflow: visible;
-  }
-  .agent-card.featured .avatar-wrap {
-    width: 84px;
-    height: 84px;
-  }
-  .avatar {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center center;
-    border: 2px solid #b7aea2;
-    border-radius: 50%;
-    background: #fff;
-    display: block;
-  }
-  .status-bubble {
+  .room {
     position: absolute;
-    right: -2px;
-    bottom: 7px;
-    width: 14px;
-    height: 14px;
+    z-index: 1;
+    border: 4px solid #050812;
+    box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .04);
+    overflow: hidden;
+  }
+  .room.ops {
+    left: 18px;
+    top: 18px;
+    width: 48%;
+    height: 58%;
+    background:
+      repeating-linear-gradient(0deg, transparent 0 27px, var(--wood-line) 27px 30px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0 70px, rgba(0,0,0,.10) 70px 73px),
+      linear-gradient(180deg, var(--wood-a), var(--wood-b));
+  }
+  .room.lounge {
+    right: 18px;
+    top: 18px;
+    width: 46%;
+    height: 50%;
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.03) 0 28px, rgba(0,0,0,.10) 28px 31px),
+      linear-gradient(180deg, var(--carpet), var(--carpet-dark));
+  }
+  .room.hall {
+    right: 18px;
+    bottom: 18px;
+    width: 46%;
+    height: 25%;
+    background:
+      linear-gradient(45deg, #f1f1f1 25%, transparent 25% 75%, #f1f1f1 75%),
+      linear-gradient(45deg, #f1f1f1 25%, #161616 25% 75%, #f1f1f1 75%);
+    background-position: 0 0, 22px 22px;
+    background-size: 44px 44px;
+  }
+  .room.lab {
+    left: 18px;
+    bottom: 18px;
+    width: 48%;
+    height: 22%;
+    background:
+      repeating-linear-gradient(90deg, #21314b 0 38px, #1b2840 38px 40px),
+      #21314b;
+  }
+  .wall-top {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 18px;
+    height: 78px;
+    z-index: 2;
+    pointer-events: none;
+    background: #172844;
+    border-bottom: 4px solid #050812;
+  }
+  .shelf,
+  .plant,
+  .clock,
+  .picture,
+  .desk,
+  .chair,
+  .sofa,
+  .table,
+  .monitor,
+  .trash {
+    position: absolute;
+    z-index: 3;
+  }
+  .shelf {
+    top: 16px;
+    width: 118px;
+    height: 36px;
+    background:
+      repeating-linear-gradient(90deg, #f3e2b7 0 8px, #9a3030 8px 14px, #263855 14px 20px),
+      #8b5b2c;
+    border: 3px solid #1c1020;
+    box-shadow: inset 0 -7px 0 #5f361d;
+  }
+  .shelf.left { left: 64px; }
+  .shelf.mid { left: 330px; }
+  .plant {
+    width: 38px;
+    height: 58px;
+  }
+  .plant::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 2px;
+    width: 20px;
+    height: 34px;
+    background: #2fa85a;
+    box-shadow: -12px 10px 0 #27874b, 12px 8px 0 #3ec96b, 0 -8px 0 #4ad976;
+    border: 2px solid #0d3a25;
+  }
+  .plant::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    bottom: 0;
+    width: 25px;
+    height: 18px;
+    background: #8e5d32;
+    border: 3px solid #2a160e;
+  }
+  .plant.a { left: 30px; top: 42px; }
+  .plant.b { right: 38px; top: 42px; }
+  .plant.c { left: 46px; bottom: 38px; }
+  .clock {
+    top: 32px;
+    left: 250px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    border: 3px solid #fff;
-    background: var(--line-strong);
+    background: #f6f1e0;
+    border: 4px solid #1a1a22;
   }
-  .status-bubble.running {
-    background: var(--red);
-    animation: livePulse 1.3s ease-out infinite;
+  .clock::before,
+  .clock::after {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 7px;
+    width: 3px;
+    height: 11px;
+    background: #db4558;
+    transform-origin: bottom;
   }
-  .status-bubble.idle { background: var(--green); }
-  .status-bubble.error { background: var(--red); }
-  .agent-meta {
-    min-width: 0;
-    flex: 1;
-    padding-top: 2px;
+  .clock::after { transform: rotate(90deg); top: 14px; height: 9px; }
+  .picture {
+    top: 24px;
+    width: 48px;
+    height: 36px;
+    background: #d7b46d;
+    border: 4px solid #572b20;
+    box-shadow: inset 0 0 0 5px #284e78;
   }
-  .name-line {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    min-width: 0;
+  .picture.one { right: 320px; }
+  .picture.two { right: 190px; width: 82px; }
+  .picture.three { right: 78px; }
+  .desk {
+    width: 138px;
+    height: 62px;
+    background: #c49358;
+    border: 4px solid #3a2217;
+    box-shadow: inset 0 -8px 0 rgba(0, 0, 0, .16);
   }
+  .desk.d1 { left: 105px; top: 170px; }
+  .desk.d2 { left: 330px; top: 170px; }
+  .desk.d3 { left: 86px; top: 398px; width: 180px; height: 74px; }
+  .desk.d4 { left: 300px; top: 398px; width: 180px; height: 74px; }
+  .monitor {
+    width: 42px;
+    height: 34px;
+    background: #e8edf1;
+    border: 4px solid #263044;
+    box-shadow: inset 0 0 0 8px #1b1f32;
+  }
+  .monitor::after {
+    content: "";
+    position: absolute;
+    left: 14px;
+    bottom: -12px;
+    width: 12px;
+    height: 10px;
+    background: #1e2637;
+  }
+  .m1 { left: 150px; top: 144px; }
+  .m2 { left: 398px; top: 144px; }
+  .m3 { left: 130px; top: 365px; }
+  .m4 { left: 358px; top: 365px; }
+  .m5 { left: 420px; top: 365px; }
+  .chair {
+    width: 32px;
+    height: 32px;
+    background: #62a85b;
+    border: 4px solid #26351f;
+    border-radius: 8px 8px 12px 12px;
+  }
+  .chair.c1 { left: 166px; top: 238px; }
+  .chair.c2 { left: 404px; top: 238px; }
+  .sofa {
+    width: 120px;
+    height: 44px;
+    background: #d84d63;
+    border: 4px solid #5b1d2d;
+    box-shadow: inset 0 -10px 0 rgba(0,0,0,.14);
+  }
+  .sofa.s1 { right: 175px; top: 210px; }
+  .sofa.s2 { right: 72px; top: 298px; width: 46px; height: 104px; }
+  .sofa.s3 { right: 318px; top: 298px; width: 46px; height: 104px; }
+  .sofa.s4 { right: 175px; top: 424px; }
+  .table {
+    width: 92px;
+    height: 82px;
+    background: #c79558;
+    border: 4px solid #59311e;
+    box-shadow: inset 0 -8px 0 rgba(0,0,0,.13);
+  }
+  .table.t1 { right: 190px; top: 316px; }
+  .trash {
+    width: 26px;
+    height: 28px;
+    background: #e5e5de;
+    border: 4px solid #283040;
+    border-radius: 0 0 9px 9px;
+  }
+  .trash.t2 { right: 230px; top: 348px; }
+  .trash.t3 { left: 64px; bottom: 50px; }
+
+  .agent-token {
+    position: absolute;
+    z-index: 10;
+    width: 118px;
+    min-height: 98px;
+    transform: translate(-50%, -50%);
+  }
+  .agent-token.running .sprite { animation: workerBob .72s steps(2, end) infinite; }
+  @keyframes workerBob { 50% { transform: translateY(-4px); } }
+  .sprite {
+    position: absolute;
+    left: 46px;
+    top: 38px;
+    width: 30px;
+    height: 42px;
+    filter: drop-shadow(3px 4px 0 rgba(0,0,0,.35));
+  }
+  .sprite::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    background: var(--skin, #d89a6a);
+    border: 3px solid #201629;
+    box-shadow: 0 -6px 0 var(--hair, #2a1b21);
+  }
+  .sprite::after {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: 21px;
+    width: 22px;
+    height: 18px;
+    background: var(--shirt, #235d92);
+    border: 3px solid #201629;
+    box-shadow: -7px 8px 0 #201629, 7px 8px 0 #201629;
+  }
+  .speech {
+    position: absolute;
+    left: 18px;
+    top: 0;
+    min-width: 164px;
+    max-width: 230px;
+    color: #fff;
+    background: var(--label);
+    border: 3px solid var(--label-border);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, .55);
+    padding: 8px 10px 9px 14px;
+  }
+  .speech::before {
+    content: "";
+    position: absolute;
+    left: 7px;
+    top: 18px;
+    width: 7px;
+    height: 7px;
+    background: var(--blue);
+    border: 2px solid #101522;
+    animation: blinkPixel .9s steps(2, end) infinite;
+  }
+  .agent-token.idle .speech::before { background: var(--green); animation: none; }
+  .agent-token.error .speech::before { background: var(--red); }
+  .agent-token:nth-child(odd) .speech { transform: translateX(-96px); }
   .agent-name {
+    display: block;
+    margin-left: 13px;
+    color: var(--yellow);
     font-size: 14px;
+    line-height: 1.15;
     font-weight: 900;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 2px 2px 0 #000;
   }
-  .agent-card.featured .agent-name { font-size: 16px; }
-  .source-tag {
-    flex: 0 0 auto;
-    height: 20px;
-    padding: 0 7px;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    font-size: 10px;
-    font-weight: 900;
-  }
-  .source-tag.codex {
-    color: #173e32;
-    background: var(--green-soft);
-  }
-  .source-tag.claude-code {
-    color: #173c61;
-    background: var(--blue-soft);
-  }
-  .role-line {
-    margin-top: 4px;
-    color: var(--muted);
-    font-size: 11px;
+  .agent-task {
+    display: block;
+    margin: 3px 0 0 13px;
+    color: #f7f2df;
+    font-size: 12px;
     line-height: 1.35;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .status-line {
-    margin-top: 7px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    color: var(--muted);
-    font-size: 11px;
-    font-weight: 800;
-  }
-  .typing-dots {
+  .agent-source {
     display: inline-flex;
-    gap: 3px;
-  }
-  .typing-dots span {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: currentColor;
-    animation: dotBlink 1.1s infinite;
-  }
-  .typing-dots span:nth-child(2) { animation-delay: .17s; }
-  .typing-dots span:nth-child(3) { animation-delay: .34s; }
-  @keyframes dotBlink {
-    0%, 80%, 100% { opacity: .25; transform: translateY(0); }
-    40% { opacity: 1; transform: translateY(-2px); }
-  }
-
-  .task-box {
-    margin-top: 13px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: var(--paper-2);
-    padding: 10px 11px;
-    min-height: 58px;
-  }
-  .task-title {
-    font-size: 13px;
-    line-height: 1.55;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  .agent-card.featured .task-title {
-    font-size: 14px;
-  }
-  .task-sub {
-    margin-top: 7px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    flex-wrap: wrap;
-    color: var(--muted);
-    font-size: 10px;
-    font-weight: 800;
-  }
-  .guess {
-    color: #5c4a16;
-    background: var(--yellow-2);
-    border: 1px solid #e5d178;
-    border-radius: 999px;
-    padding: 2px 7px;
-  }
-
-  .layers {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-  .layer {
-    position: relative;
-    min-height: 32px;
-    display: grid;
-    grid-template-columns: 24px 1fr;
-    gap: 8px;
-    align-items: center;
-    color: var(--muted);
-    font-size: 11px;
-    border-top: 1px dashed rgba(185,175,158,.75);
-    padding-top: 7px;
-  }
-  .layer::before {
-    content: "";
-    position: absolute;
-    top: -1px;
-    left: 32px;
-    width: 58px;
-    height: 1px;
-    background: var(--red);
-    opacity: 0;
-  }
-  .agent-card.running .layer::before {
-    animation: dataFlow 1.35s linear infinite;
-  }
-  @keyframes dataFlow {
-    0% { transform: translateX(-18px); opacity: 0; }
-    22% { opacity: .8; }
-    100% { transform: translateX(120px); opacity: 0; }
-  }
-  .layer-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 1px solid var(--line-strong);
-    background: #fff;
-    display: grid;
-    place-items: center;
-    color: var(--navy);
+    margin-top: 5px;
+    margin-left: 13px;
+    color: #101523;
+    background: #a7d7ff;
+    border: 2px solid #101523;
+    padding: 1px 5px;
     font-size: 10px;
     font-weight: 900;
   }
-  .layer-text {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .layer-name {
-    color: var(--ink);
-    font-weight: 900;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .layer-detail {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .empty-state {
-    border: 1px dashed var(--line-strong);
-    border-radius: 8px;
-    background: rgba(255,253,248,.58);
-    min-height: 120px;
-    display: grid;
-    place-items: center;
-    padding: 22px;
-    color: var(--muted);
-    text-align: center;
-    font-size: 13px;
-  }
+  .agent-source.claude-code { background: #ffcf87; }
 
   .bottom-area {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+    grid-template-columns: minmax(0, 1fr) minmax(300px, .68fr);
     gap: 14px;
-    margin-top: 22px;
+    margin-top: 18px;
   }
   .panel {
-    background: rgba(255,253,248,.78);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 14px;
+    background: #121a2e;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, .5);
+    padding: 13px;
   }
   .panel h2 {
     margin: 0 0 10px;
+    color: #fff0b8;
     font-size: 15px;
+    text-shadow: 2px 2px 0 #000;
   }
   .activity-list,
   .type-list {
@@ -540,69 +596,85 @@
     grid-template-columns: auto 1fr auto;
     gap: 9px;
     align-items: center;
-    min-height: 32px;
+    min-height: 34px;
     color: var(--muted);
+    background: #1a253d;
+    border: 2px solid #050812;
+    padding: 6px 8px;
     font-size: 12px;
   }
   .activity-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--line-strong);
+    width: 10px;
+    height: 10px;
+    background: var(--green);
+    border: 2px solid #000;
   }
-  .activity-dot.running { background: var(--red); }
-  .activity-dot.idle { background: var(--green); }
+  .activity-dot.running { background: var(--red); animation: blinkPixel .8s steps(2, end) infinite; }
   .activity-dot.error { background: var(--red); }
   .activity-label,
   .type-name {
     min-width: 0;
-    color: var(--ink);
+    color: #f6edd0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .activity-time,
   .type-count {
+    color: #aeb8c9;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
   .type-bar {
     grid-column: 1 / -1;
-    height: 6px;
-    border-radius: 999px;
-    background: #e6dece;
+    height: 8px;
+    background: #0a1020;
+    border: 2px solid #050812;
     overflow: hidden;
   }
   .type-bar span {
     display: block;
     height: 100%;
     width: 0;
-    background: var(--blue);
+    background: linear-gradient(90deg, #5ea8ff, #ffd44d);
   }
-
+  .empty-state {
+    min-height: 120px;
+    display: grid;
+    place-items: center;
+    color: #b8c0cf;
+    background: #151d31;
+    border: 3px dashed #3b4862;
+    text-align: center;
+    padding: 20px;
+    font-size: 13px;
+  }
   .hidden { display: none !important; }
 
   @media (max-width: 980px) {
-    .top-inner {
-      grid-template-columns: 1fr;
-      gap: 9px;
-    }
+    .top-inner { grid-template-columns: 1fr; }
     .mode-row { flex-wrap: wrap; }
-    .featured-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .summary { grid-template-columns: repeat(3, minmax(90px, 1fr)); }
+    .ticker { min-width: 100%; }
+    .hud { grid-template-columns: repeat(3, minmax(92px, 1fr)); }
+    .studio-map { min-height: 760px; }
+    .room.ops,
+    .room.lounge,
+    .room.lab,
+    .room.hall { left: 14px; right: 14px; width: auto; }
+    .room.ops { top: 14px; height: 330px; }
+    .room.lounge { top: 358px; height: 220px; }
+    .room.lab { bottom: 14px; height: 150px; }
+    .room.hall { display: none; }
     .bottom-area { grid-template-columns: 1fr; }
-    .updated { justify-self: start; }
   }
-
   @media (max-width: 640px) {
-    .main { padding: 12px 12px 30px; }
-    .filters { grid-template-columns: 1fr; }
-    .filter-pills { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
-    .summary { grid-template-columns: repeat(2, minmax(90px, 1fr)); }
-    .featured-grid,
-    .board-grid { grid-template-columns: 1fr; }
+    .main { padding: 12px 10px 28px; }
+    .controls { grid-template-columns: 1fr; }
+    .filter-pills { justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 3px; }
+    .hud { grid-template-columns: repeat(2, minmax(92px, 1fr)); }
     .section-head { align-items: flex-start; flex-direction: column; gap: 4px; }
-    .section-note { white-space: normal; }
+    .studio-map { min-height: 720px; }
+    .speech { max-width: 180px; min-width: 150px; }
   }
 </style>
 </head>
@@ -616,50 +688,60 @@
         </div>
         <div class="mode-row">
           <div class="mode-chip live"><span class="live-dot"></span>ライブ</div>
-          <div class="mode-chip">24時間</div>
-          <div class="mode-chip">Codex / Claude Code</div>
-          <div class="ticker"><span id="ticker-text">ローカルの稼働状況を読み込み中</span></div>
+          <div class="mode-chip">撮影モード</div>
+          <div class="mode-chip">Codex / Claude</div>
+          <div class="ticker"><span id="ticker-text">AIチームの稼働状況を読み込み中</span></div>
         </div>
         <div class="updated" id="updated">--:-- 更新</div>
       </div>
     </header>
 
     <main class="main">
-      <div class="filters">
+      <div class="controls">
         <input id="search" class="search" type="search" placeholder="担当名・種類で検索" />
         <div class="filter-pills" id="filters">
           <button class="filter-btn active" data-filter="all">全員</button>
           <button class="filter-btn" data-filter="running">稼働中</button>
           <button class="filter-btn" data-filter="idle">待機</button>
-          <button class="filter-btn" data-filter="error">エラー</button>
+          <button class="filter-btn" data-filter="error">要確認</button>
           <button class="filter-btn" data-filter="codex">Codex</button>
           <button class="filter-btn" data-filter="claude-code">Claude</button>
         </div>
       </div>
 
-      <section class="summary" aria-label="summary">
+      <section class="hud" aria-label="summary">
         <div class="metric"><div class="metric-label">合計</div><div class="metric-value" id="metric-total">0</div></div>
         <div class="metric running"><div class="metric-label">稼働中</div><div class="metric-value" id="metric-running">0</div></div>
         <div class="metric ok"><div class="metric-label">待機</div><div class="metric-value" id="metric-idle">0</div></div>
-        <div class="metric error"><div class="metric-label">エラー</div><div class="metric-value" id="metric-error">0</div></div>
+        <div class="metric error"><div class="metric-label">要確認</div><div class="metric-value" id="metric-error">0</div></div>
         <div class="metric source"><div class="metric-label">Codex</div><div class="metric-value" id="metric-codex">0</div></div>
         <div class="metric source"><div class="metric-label">Claude</div><div class="metric-value" id="metric-claude">0</div></div>
       </section>
 
       <section>
         <div class="section-head">
-          <h1>いま動いているAIチーム</h1>
-          <div class="section-note" id="featured-note">実データだけを表示</div>
+          <h1>AIチーム稼働フロア</h1>
+          <div class="section-note" id="featured-note">実データを抽象表示</div>
         </div>
-        <div class="featured-grid" id="featured-grid"></div>
-      </section>
-
-      <section>
-        <div class="section-head">
-          <h2>エージェント一覧</h2>
-          <div class="section-note" id="board-note">-- 件</div>
+        <div class="studio-wrap">
+          <div class="studio-map" id="studio-map">
+            <div class="room ops"></div>
+            <div class="room lounge"></div>
+            <div class="room hall"></div>
+            <div class="room lab"></div>
+            <div class="wall-top"></div>
+            <div class="shelf left"></div><div class="shelf mid"></div>
+            <div class="clock"></div>
+            <div class="picture one"></div><div class="picture two"></div><div class="picture three"></div>
+            <div class="plant a"></div><div class="plant b"></div><div class="plant c"></div>
+            <div class="desk d1"></div><div class="desk d2"></div><div class="desk d3"></div><div class="desk d4"></div>
+            <div class="monitor m1"></div><div class="monitor m2"></div><div class="monitor m3"></div><div class="monitor m4"></div><div class="monitor m5"></div>
+            <div class="chair c1"></div><div class="chair c2"></div>
+            <div class="sofa s1"></div><div class="sofa s2"></div><div class="sofa s3"></div><div class="sofa s4"></div>
+            <div class="table t1"></div><div class="trash t2"></div><div class="trash t3"></div>
+            <div id="agent-layer"></div>
+          </div>
         </div>
-        <div class="board-grid" id="board-grid"></div>
       </section>
 
       <section class="bottom-area">
@@ -680,12 +762,9 @@
     window.location.replace("http://localhost:8799/");
   }
 
-  const AVATAR_COUNT = 24;
-  const AVATAR_VERSION = "centered-avatar-3";
   const REFRESH_MS = 3000;
   const state = {
     agents: [],
-    activity: [],
     summary: {},
     filter: "all",
     search: "",
@@ -696,14 +775,12 @@
   const els = {
     search: byId("search"),
     filters: byId("filters"),
-    featuredGrid: byId("featured-grid"),
-    boardGrid: byId("board-grid"),
+    agentLayer: byId("agent-layer"),
     activityList: byId("activity-list"),
     typeList: byId("type-list"),
     ticker: byId("ticker-text"),
     updated: byId("updated"),
     featuredNote: byId("featured-note"),
-    boardNote: byId("board-note"),
     total: byId("metric-total"),
     running: byId("metric-running"),
     idle: byId("metric-idle"),
@@ -711,6 +788,14 @@
     codex: byId("metric-codex"),
     claude: byId("metric-claude")
   };
+
+  const SPOTS = [
+    [41, 30], [21, 49], [37, 56], [30, 75],
+    [72, 44], [84, 48], [72, 68], [84, 72]
+  ];
+  const SKINS = ["#d89a6a", "#f0c08b", "#a96d4e", "#e4ad7c", "#c98462"];
+  const HAIRS = ["#251720", "#453128", "#7b3e2d", "#d6ba76", "#1c2738"];
+  const SHIRTS = ["#235d92", "#9d303f", "#2f8f65", "#52449d", "#d28a2b", "#1b6f83"];
 
   function stripTechnicalLocations(value) {
     return String(value || "")
@@ -739,44 +824,30 @@
       || /^https?:\/\/?/i.test(text);
   }
 
-  function friendlyInternalLabel(value, fallback = "作業内容を確認中") {
+  function friendlyInternalLabel(value, fallback = "確認中") {
     const text = String(value || "").trim();
     if (/^codex-auto-review$/i.test(text)) return "レビュー担当";
-    if (/^Codex ran out of room/i.test(text)) return "前の作業を引き継ぎ中";
-    if (/^The following is the Codex agent history/i.test(text)) return "レビュー内容を確認中";
-    if (/^https?:\/\//i.test(text)) return "Webページ確認中";
+    if (/^Codex ran out of room/i.test(text)) return "引き継ぎ中";
+    if (/^The following is the Codex agent history/i.test(text)) return "レビュー中";
+    if (/^https?:\/\//i.test(text)) return "Web確認中";
     return fallback;
   }
 
   function cleanText(value, fallback = "") {
     const raw = String(value || "").replace(/^Automation:\s*/i, "");
-    if (/^https?:\/\//i.test(raw.trim())) return friendlyInternalLabel(raw, "Webページ確認中");
+    if (/^https?:\/\//i.test(raw.trim())) return friendlyInternalLabel(raw, "Web確認中");
     const stripped = stripTechnicalLocations(raw);
     if (stripped && !isInternalLabel(stripped)) return stripped;
     const friendly = friendlyInternalLabel(raw, "");
     if (friendly) return friendly;
     const fallbackText = stripTechnicalLocations(fallback);
     if (fallbackText && !isInternalLabel(fallbackText)) return fallbackText;
-    return friendlyInternalLabel(fallback, "作業内容を確認中");
+    return friendlyInternalLabel(fallback, "確認中");
   }
 
   function cleanDisplayName(value) {
     const text = cleanText(value, "");
-    if (!text || text === "作業内容を確認中" || text === "作業内容なし" || text === "Webページ確認中") return "";
-    return text;
-  }
-
-  function cleanRole(agent) {
-    const role = cleanText(agent.role, "");
-    if (role && role !== "作業内容を確認中") return role;
-    return "AIエージェント";
-  }
-
-  function humanizeActivity(value) {
-    const text = cleanText(value, "");
-    if (!text || text === "作業内容を確認中") return "";
-    if (/^[a-z0-9_.-]+:[a-z0-9_. -]+$/i.test(text)) return "外部ツール実行";
-    if (/^[a-z0-9_.-]+-[a-z0-9_.-]+(?:-[a-z0-9_.-]+)+$/i.test(text)) return "専門作業";
+    if (!text || text === "確認中" || text === "Web確認中") return "";
     return text;
   }
 
@@ -789,15 +860,9 @@
     return Math.abs(h >>> 0);
   }
 
-  function avatarFor(agent, index = 0) {
-    const key = agent.id || agent.headline || `${agent.source}-${index}`;
-    const num = (hashText(key) % AVATAR_COUNT) + 1;
-    return `assets/avatars/avatar-${String(num).padStart(2, "0")}.png?v=${AVATAR_VERSION}`;
-  }
-
   function jobBaseName(agent) {
     const text = `${agent.job_type || ""} ${agent.headline || ""} ${agent.skill || ""}`;
-    if (/SNS|コンテンツ|Instagram|Threads|note|リール|投稿/.test(text)) return "SNS担当";
+    if (/SNS|コンテンツ|Instagram|Threads|note|リール|投稿/.test(text)) return "SNS導線編集長";
     if (/営業|新規事業|競合|案件|市場/.test(text)) return "営業リサーチ担当";
     if (/経理|請求|精算|invoice/.test(text)) return "経理チェック担当";
     if (/採用|求人|面接|応募/.test(text)) return "採用確認担当";
@@ -805,7 +870,7 @@
     if (/文字起こし|議事録/.test(text)) return "議事録整理担当";
     if (/デザイン|UI|UX|画面/.test(text)) return "デザイン確認担当";
     if (/開発|エンジニアリング|コード|実装|バグ|DB/.test(text)) return "実装チェック担当";
-    if (/秘書|自動化|定型/.test(text)) return "タスク整理担当";
+    if (/秘書|自動化|定型/.test(text)) return "PM秘書担当";
     return "リサーチ担当";
   }
 
@@ -820,14 +885,8 @@
   }
 
   function toCircledNumber(n) {
-    const chars = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
-    return chars[n] || ` ${n}`;
-  }
-
-  function statusLabel(status) {
-    if (status === "running") return "作業中";
-    if (status === "error") return "要確認";
-    return "待機中";
+    const chars = ["", "①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩", "⑪", "⑫", "⑬", "⑭", "⑮", "⑯", "⑰", "⑱", "⑲", "⑳"];
+    return chars[n] || String(n);
   }
 
   function sourceLabel(source) {
@@ -835,243 +894,17 @@
     return "Codex";
   }
 
-  function elapsedLabel(agent) {
-    const now = Date.now();
-    const start = agent.running_since_ms || agent.updated_at_ms || agent.created_at_ms;
-    if (!start) return "";
-    const diff = Math.max(0, now - start);
-    const min = Math.floor(diff / 60000);
-    if (min < 1) return "たった今";
-    if (min < 60) return `${min}分前`;
-    const hours = Math.floor(min / 60);
-    if (hours < 24) return `${hours}時間前`;
-    return `${Math.floor(hours / 24)}日前`;
-  }
-
-  function matchFilter(agent) {
-    if (state.filter === "all") return true;
-    if (["running", "idle", "error"].includes(state.filter)) return agent.status === state.filter;
-    return agent.source === state.filter;
-  }
-
-  function matchSearch(agent) {
-    if (!state.search) return true;
-    const hay = [
-      agent._displayName,
-      agent.role,
-      agent.job_type,
-      agent.skill,
-      agent.current_tool,
-      agent.source
-    ].join(" ").toLowerCase();
-    return hay.includes(state.search.toLowerCase());
-  }
-
-  function visibleAgents() {
-    return state.agents.filter((agent) => matchFilter(agent) && matchSearch(agent));
-  }
-
-  function updateMetrics() {
-    const agents = state.agents;
-    const summary = state.summary || {};
-    const codex = agents.filter((a) => a.source === "codex").length;
-    const claude = agents.filter((a) => a.source === "claude-code").length;
-    els.total.textContent = summary.total ?? agents.length;
-    els.running.textContent = summary.running ?? agents.filter((a) => a.status === "running").length;
-    els.idle.textContent = summary.idle ?? agents.filter((a) => a.status === "idle").length;
-    els.error.textContent = summary.error ?? agents.filter((a) => a.status === "error").length;
-    els.codex.textContent = codex;
-    els.claude.textContent = claude;
-  }
-
-  function renderStatus(agent) {
-    const text = statusLabel(agent.status);
-    if (agent.status !== "running") return `<span>${text}</span>`;
-    return `<span>${text}</span><span class="typing-dots" aria-hidden="true"><span></span><span></span><span></span></span>`;
-  }
-
-  function taskLabel(agent, job) {
-    if (agent.status === "running") return `${job}を処理中`;
-    if (agent.status === "error") return `${job}で確認が必要`;
-    return `${job}で待機中`;
-  }
-
-  function renderLayers(agent, allAgents) {
-    const children = Array.isArray(agent.children) ? agent.children : [];
-    const parts = [];
-    children.slice(0, 3).forEach((child, idx) => {
-      const childName = displayName(child, idx, allAgents.concat(children));
-      const childTask = taskLabel(child, jobBaseName(child));
-      parts.push(`
-        <div class="layer">
-          <div class="layer-icon">部</div>
-          <div class="layer-text">
-            <div class="layer-name">${escapeHtml(childName)}</div>
-            <div class="layer-detail">${escapeHtml(childTask)}</div>
-          </div>
-        </div>
-      `);
-    });
-    if (agent.skill) {
-      parts.push(`
-        <div class="layer">
-          <div class="layer-icon">技</div>
-          <div class="layer-text">
-            <div class="layer-name">専門作業</div>
-            <div class="layer-detail">${escapeHtml(humanizeActivity(agent.skill) || "確認中")}</div>
-          </div>
-        </div>
-      `);
-    }
-    return parts.length ? `<div class="layers">${parts.join("")}</div>` : "";
-  }
-
-  function renderCard(agent, index, options = {}) {
-    const featured = options.featured ? " featured" : "";
-    const role = cleanRole(agent);
-    const src = agent.source || "codex";
+  function statusLabel(agent) {
     const job = cleanText(agent.job_type, "その他");
-    const task = taskLabel(agent, job);
-    const tool = humanizeActivity(agent.current_tool || agent.skill || "");
-    const detail = tool ? `${tool} / ${elapsedLabel(agent)}` : elapsedLabel(agent);
-    return `
-      <article class="agent-card ${agent.status || "idle"}${featured}">
-        <div class="card-top">
-          <div class="avatar-wrap">
-            <img class="avatar" src="${avatarFor(agent, index)}" alt="" loading="lazy" />
-            <span class="status-bubble ${agent.status || "idle"}"></span>
-          </div>
-          <div class="agent-meta">
-            <div class="name-line">
-              <div class="agent-name">${escapeHtml(agent._displayName)}</div>
-              <span class="source-tag ${src}">${sourceLabel(src)}</span>
-            </div>
-            <div class="role-line">${escapeHtml(role)}</div>
-            <div class="status-line">${renderStatus(agent)}</div>
-          </div>
-        </div>
-        <div class="task-box">
-          <div class="task-title">${escapeHtml(task)}</div>
-          <div class="task-sub">
-            <span class="guess">推測: ${escapeHtml(job)}</span>
-            ${detail ? `<span>${escapeHtml(detail)}</span>` : ""}
-          </div>
-        </div>
-        ${renderLayers(agent, state.agents)}
-      </article>
-    `;
+    if (agent.status === "running") return `${job}中`;
+    if (agent.status === "error") return `${job}確認`;
+    return `${job}待機`;
   }
 
-  function renderFeatured() {
-    const running = visibleAgents().filter((agent) => agent.status === "running");
-    const featured = running.slice(0, 3);
-    els.featuredNote.textContent = running.length ? `${running.length}件が稼働中` : "いま動いているエージェントはありません";
-    if (!featured.length) {
-      els.featuredGrid.innerHTML = `<div class="empty-state">稼働中のエージェントが出たら、ここに大きく表示されます。</div>`;
-      return;
-    }
-    els.featuredGrid.innerHTML = featured.map((agent, index) => renderCard(agent, index, { featured: true })).join("");
-  }
-
-  function renderBoard() {
-    const agents = visibleAgents();
-    els.boardNote.textContent = `${agents.length} 件`;
-    if (!agents.length) {
-      els.boardGrid.innerHTML = `<div class="empty-state">条件に合うエージェントがありません。</div>`;
-      return;
-    }
-    els.boardGrid.innerHTML = agents.map((agent, index) => renderCard(agent, index)).join("");
-  }
-
-  function renderActivity() {
-    const agents = state.agents
-      .slice()
-      .sort((a, b) => (b.updated_at_ms || 0) - (a.updated_at_ms || 0))
-      .slice(0, 8);
-    if (!agents.length) {
-      els.activityList.innerHTML = `<div class="empty-state">最近の動きはまだありません。</div>`;
-      return;
-    }
-    els.activityList.innerHTML = agents.map((agent) => `
-      <div class="activity-item">
-        <span class="activity-dot ${agent.status || "idle"}"></span>
-        <div class="activity-label">${escapeHtml(taskLabel(agent, cleanText(agent.job_type, "その他")))}</div>
-        <div class="activity-time">${escapeHtml(relativeTime(agent.updated_at_ms))}</div>
-      </div>
-    `).join("");
-  }
-
-  function renderTypes() {
-    const counts = new Map();
-    state.agents.forEach((agent) => {
-      const key = cleanText(agent.job_type, "その他");
-      counts.set(key, (counts.get(key) || 0) + 1);
-    });
-    const rows = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
-    const max = Math.max(1, ...rows.map((row) => row[1]));
-    if (!rows.length) {
-      els.typeList.innerHTML = `<div class="empty-state">分類できるエージェントがありません。</div>`;
-      return;
-    }
-    els.typeList.innerHTML = rows.map(([name, count]) => `
-      <div class="type-row">
-        <span class="activity-dot"></span>
-        <div class="type-name">${escapeHtml(name)} <span class="guess">推測</span></div>
-        <div class="type-count">${count}</div>
-        <div class="type-bar"><span style="width:${Math.round(count / max * 100)}%"></span></div>
-      </div>
-    `).join("");
-  }
-
-  function updateTicker() {
-    const running = state.agents.filter((agent) => agent.status === "running");
-    const target = running[0] || state.agents[0];
-    if (!target) {
-      els.ticker.textContent = "ローカルの稼働状況を読み込み中";
-      return;
-    }
-    els.ticker.textContent = taskLabel(target, cleanText(target.job_type, "その他"));
-  }
-
-  function renderAll() {
-    updateMetrics();
-    renderFeatured();
-    renderBoard();
-    renderActivity();
-    renderTypes();
-    updateTicker();
-  }
-
-  function normalizeAgent(agent, index, allAgents) {
-    const next = { ...agent };
-    next.status = next.status || "idle";
-    next.source = next.source || "codex";
-    next.headline = cleanText(next.headline, cleanText(next.title, "作業内容なし"));
-    next.job_type = cleanText(next.job_type, "その他");
-    next._displayName = displayName(next, index, allAgents);
-    return next;
-  }
-
-  async function fetchState() {
-    try {
-      const res = await fetch("/api/state", { cache: "no-store" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      const rawAgents = Array.isArray(data.agents) ? data.agents : [];
-      state.agents = rawAgents.map((agent, index) => normalizeAgent(agent, index, rawAgents));
-      state.activity = Array.isArray(data.activity) ? data.activity : [];
-      state.summary = data.summary || {};
-      state.lastGeneratedAt = data.generated_at_ms || Date.now();
-      els.updated.textContent = `${formatClock(state.lastGeneratedAt)} 更新`;
-      renderAll();
-    } catch (err) {
-      els.updated.textContent = "取得エラー";
-      els.ticker.textContent = "server.py の /api/state に接続できません";
-      els.featuredGrid.innerHTML = `<div class="empty-state">データ取得に失敗しました。server.py が起動しているか確認してください。</div>`;
-      els.boardGrid.innerHTML = "";
-      els.activityList.innerHTML = "";
-      els.typeList.innerHTML = "";
-    }
+  function activityLabel(agent) {
+    if (agent.status === "running") return "作業中";
+    if (agent.status === "error") return "要確認";
+    return "待機中";
   }
 
   function relativeTime(ms) {
@@ -1099,10 +932,162 @@
       .replace(/'/g, "&#039;");
   }
 
+  function matchFilter(agent) {
+    if (state.filter === "all") return true;
+    if (["running", "idle", "error"].includes(state.filter)) return agent.status === state.filter;
+    return agent.source === state.filter;
+  }
+
+  function matchSearch(agent) {
+    if (!state.search) return true;
+    const hay = [agent._displayName, agent.role, agent.job_type, agent.skill, agent.current_tool, agent.source]
+      .join(" ").toLowerCase();
+    return hay.includes(state.search.toLowerCase());
+  }
+
+  function visibleAgents() {
+    return state.agents.filter((agent) => matchFilter(agent) && matchSearch(agent));
+  }
+
+  function updateMetrics() {
+    const agents = state.agents;
+    const summary = state.summary || {};
+    els.total.textContent = summary.total ?? agents.length;
+    els.running.textContent = summary.running ?? agents.filter((a) => a.status === "running").length;
+    els.idle.textContent = summary.idle ?? agents.filter((a) => a.status === "idle").length;
+    els.error.textContent = summary.error ?? agents.filter((a) => a.status === "error").length;
+    els.codex.textContent = agents.filter((a) => a.source === "codex").length;
+    els.claude.textContent = agents.filter((a) => a.source === "claude-code").length;
+  }
+
+  function renderAgent(agent, index) {
+    const spot = SPOTS[index % SPOTS.length];
+    const jitter = hashText(agent.id || agent._displayName) % 7;
+    const left = Math.min(93, Math.max(8, spot[0] + (jitter - 3)));
+    const top = Math.min(88, Math.max(14, spot[1] + ((jitter % 3) - 1) * 3));
+    const h = hashText(agent.id || agent._displayName);
+    const style = [
+      `left:${left}%`,
+      `top:${top}%`,
+      `--skin:${SKINS[h % SKINS.length]}`,
+      `--hair:${HAIRS[(h >> 3) % HAIRS.length]}`,
+      `--shirt:${SHIRTS[(h >> 6) % SHIRTS.length]}`
+    ].join(";");
+    return `
+      <div class="agent-token ${agent.status || "idle"}" style="${style}">
+        <div class="speech">
+          <span class="agent-name">${escapeHtml(agent._displayName)}</span>
+          <span class="agent-task">${escapeHtml(statusLabel(agent))}</span>
+          <span class="agent-source ${agent.source || "codex"}">${sourceLabel(agent.source)}</span>
+        </div>
+        <div class="sprite" aria-hidden="true"></div>
+      </div>
+    `;
+  }
+
+  function renderMap() {
+    const agents = visibleAgents();
+    const running = agents.filter((agent) => agent.status === "running");
+    els.featuredNote.textContent = running.length ? `${running.length}名が稼働中` : "稼働待ちのAIチーム";
+    if (!agents.length) {
+      els.agentLayer.innerHTML = `<div class="empty-state">表示できるエージェントがありません。</div>`;
+      return;
+    }
+    const ordered = agents.slice().sort((a, b) => {
+      const score = { running: 0, error: 1, idle: 2 };
+      return (score[a.status] ?? 9) - (score[b.status] ?? 9) || (b.updated_at_ms || 0) - (a.updated_at_ms || 0);
+    }).slice(0, 8);
+    els.agentLayer.innerHTML = ordered.map((agent, index) => renderAgent(agent, index)).join("");
+  }
+
+  function renderActivity() {
+    const agents = state.agents.slice().sort((a, b) => (b.updated_at_ms || 0) - (a.updated_at_ms || 0)).slice(0, 8);
+    if (!agents.length) {
+      els.activityList.innerHTML = `<div class="empty-state">最近の動きはまだありません。</div>`;
+      return;
+    }
+    els.activityList.innerHTML = agents.map((agent) => `
+      <div class="activity-item">
+        <span class="activity-dot ${agent.status || "idle"}"></span>
+        <div class="activity-label">${escapeHtml(`${agent._displayName} ${activityLabel(agent)}`)}</div>
+        <div class="activity-time">${escapeHtml(relativeTime(agent.updated_at_ms))}</div>
+      </div>
+    `).join("");
+  }
+
+  function renderTypes() {
+    const counts = new Map();
+    state.agents.forEach((agent) => {
+      const key = cleanText(agent.job_type, "その他");
+      counts.set(key, (counts.get(key) || 0) + 1);
+    });
+    const rows = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+    const max = Math.max(1, ...rows.map((row) => row[1]));
+    if (!rows.length) {
+      els.typeList.innerHTML = `<div class="empty-state">分類できるエージェントがありません。</div>`;
+      return;
+    }
+    els.typeList.innerHTML = rows.map(([name, count]) => `
+      <div class="type-row">
+        <span class="activity-dot"></span>
+        <div class="type-name">${escapeHtml(name)}</div>
+        <div class="type-count">${count}</div>
+        <div class="type-bar"><span style="width:${Math.round(count / max * 100)}%"></span></div>
+      </div>
+    `).join("");
+  }
+
+  function updateTicker() {
+    const running = state.agents.filter((agent) => agent.status === "running");
+    const target = running[0] || state.agents[0];
+    if (!target) {
+      els.ticker.textContent = "AIチームの稼働状況を読み込み中";
+      return;
+    }
+    els.ticker.textContent = `${target._displayName} ${activityLabel(target)} / ${cleanText(target.job_type, "その他")}`;
+  }
+
+  function renderAll() {
+    updateMetrics();
+    renderMap();
+    renderActivity();
+    renderTypes();
+    updateTicker();
+  }
+
+  function normalizeAgent(agent, index, allAgents) {
+    const next = { ...agent };
+    next.status = next.status || "idle";
+    next.source = next.source || "codex";
+    next.headline = cleanText(next.headline, cleanText(next.title, "確認中"));
+    next.job_type = cleanText(next.job_type, "その他");
+    next._displayName = displayName(next, index, allAgents);
+    return next;
+  }
+
+  async function fetchState() {
+    try {
+      const res = await fetch("/api/state", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const rawAgents = Array.isArray(data.agents) ? data.agents : [];
+      state.agents = rawAgents.map((agent, index) => normalizeAgent(agent, index, rawAgents));
+      state.summary = data.summary || {};
+      state.lastGeneratedAt = data.generated_at_ms || Date.now();
+      els.updated.textContent = `${formatClock(state.lastGeneratedAt)} 更新`;
+      renderAll();
+    } catch (err) {
+      els.updated.textContent = "取得エラー";
+      els.ticker.textContent = "ローカルサーバーに接続できません";
+      els.agentLayer.innerHTML = `<div class="empty-state">データ取得に失敗しました。server.py の起動状態を確認してください。</div>`;
+      els.activityList.innerHTML = "";
+      els.typeList.innerHTML = "";
+    }
+  }
+
   els.search.addEventListener("input", (event) => {
     state.search = event.target.value.trim();
-    renderFeatured();
-    renderBoard();
+    renderMap();
   });
 
   els.filters.addEventListener("click", (event) => {
@@ -1110,8 +1095,7 @@
     if (!button) return;
     state.filter = button.dataset.filter;
     els.filters.querySelectorAll(".filter-btn").forEach((btn) => btn.classList.toggle("active", btn === button));
-    renderFeatured();
-    renderBoard();
+    renderMap();
   });
 
   fetchState();
